@@ -3,8 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GreenMeans: Search</title>
-    <meta name="description" content="The search for a greener web. Choose your provider and search with accessibility by default.">
+    <title>GreenMeans: Search | Eco-Friendly Search Aggregator</title>
+    <meta name="description" content="Discover a greener way to search. GreenMeans lets you choose your favorite search engine whilst being eco-friendly and privacy-focused. Improve your search footprint today.">
+    <meta name="keywords" content="eco-friendly search, green search, privacy search, search aggregator, Ecosia, DuckDuckGo, private search, climate action, search choices">
+    <meta name="author" content="GreenMeans">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://greenmeans.ovh/">
+    <meta property="og:title" content="GreenMeans: Search | Eco-Friendly Search Aggregator">
+    <meta property="og:description" content="Choose your favorite search engine. Start reducing your digital footprint one query at a time.">
+    <meta property="og:image" content="https://greenmeans.ovh/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://greenmeans.ovh/">
+    <meta property="twitter:title" content="GreenMeans: Search | Eco-Friendly Search Aggregator">
+    <meta property="twitter:description" content="Choose your favorite search engine. Start reducing your digital footprint one query at a time.">
+    <meta property="twitter:image" content="https://greenmeans.ovh/og-image.png">
+
+    <link rel="canonical" href="https://greenmeans.ovh/">
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "GreenMeans",
+      "url": "https://greenmeans.ovh/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://greenmeans.ovh/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
     
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -16,7 +50,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind Configuration -->
     <script>
@@ -26,7 +60,7 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        dyslexic: ['Open Sans', 'sans-serif'],
+                        dyslexic: ['Lexend', 'Open Sans', 'sans-serif'],
                     },
                     colors: {
                         emerald: {
@@ -36,10 +70,10 @@
                             300: '#6ee7b7',
                             400: '#34d399',
                             500: '#10b981',
-                            600: '#059669',
-                            700: '#047857',
-                            800: '#065f46',
-                            900: '#064e3b',
+                            600: '#047857', // Darkened for accessibility (emerald-700 equivalent)
+                            700: '#065f46',
+                            800: '#064e3b',
+                            900: '#022c22',
                         }
                     }
                 }
@@ -57,7 +91,7 @@
         }
 
         .dyslexia-mode {
-            font-family: 'Open Sans', system-ui, sans-serif !important;
+            font-family: 'Lexend', 'Open Sans', system-ui, sans-serif !important;
             line-height: 1.8 !important;
             letter-spacing: 0.05em !important;
             word-spacing: 0.1em !important;
@@ -67,25 +101,27 @@
             font-family: 'Open Sans', system-ui, sans-serif !important;
         }
 
-        .reduced-motion * {
-            animation-duration: 0.01ms !important;
-            transition-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-        }
-
-        /* Custom Scrollbar for Dropdown */
+        /* Custom Scrollbar for Dropdown and Page */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.05);
+            background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            border-radius: 9999px;
+            border-radius: 10px;
             background-color: #e2e8f0; /* bg-slate-200 */
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #10b981; /* bg-emerald-500 */
         }
         .dark ::-webkit-scrollbar-thumb {
-            background-color: #1e293b; /* bg-slate-800 */
+            background-color: #334155; /* bg-slate-700 */
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background-color: #10b981; /* bg-emerald-500 */
         }
     </style>
 </head>
@@ -95,14 +131,21 @@
     <!-- React, ReactDOM, Babel, and Lucide CDNs -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
     <script src="https://unpkg.com/lucide@latest" crossorigin></script>
 
     <!-- App Logic -->
-    <script type="text/babel">
+    <script>
         const { useState, useEffect, useCallback, useRef } = React;
+        const h = React.createElement;
 
         const SEARCH_ENGINES = {
+            ecosia: {
+                name: 'Ecosia',
+                url: 'https://www.ecosia.org/search',
+                queryParam: 'q',
+                icon: 'https://www.google.com/s2/favicons?domain=ecosia.org&sz=64',
+                description: "The search engine that plants trees while you search."
+            },
             google: {
                 name: 'Google',
                 url: 'https://www.google.com/search',
@@ -124,27 +167,73 @@
                 icon: 'https://www.google.com/s2/favicons?domain=duckduckgo.com&sz=64',
                 description: "Privacy-focused search that doesn't track you."
             },
-            ecosia: {
-                name: 'Ecosia',
-                url: 'https://www.ecosia.org/search',
+            brave: {
+                name: 'Brave Search',
+                url: 'https://search.brave.com/search',
                 queryParam: 'q',
-                icon: 'https://www.google.com/s2/favicons?domain=ecosia.org&sz=64',
-                description: "The search engine that plants trees while you search."
+                icon: 'https://www.google.com/s2/favicons?domain=search.brave.com&sz=64',
+                description: "Independent, private, and user-first search."
+            },
+            startpage: {
+                name: 'Startpage',
+                url: 'https://www.startpage.com/do/dsearch',
+                queryParam: 'query',
+                icon: 'https://www.google.com/s2/favicons?domain=startpage.com&sz=64',
+                description: "Google's results with total privacy protection."
+            },
+            qwant: {
+                name: 'Qwant',
+                url: 'https://www.qwant.com/',
+                queryParam: 'q',
+                icon: 'https://www.google.com/s2/favicons?domain=qwant.com&sz=64',
+                description: "The European search engine that respects your privacy."
+            },
+            swisscows: {
+                name: 'Swisscows',
+                url: 'https://swisscows.com/web',
+                queryParam: 'query',
+                icon: 'https://www.google.com/s2/favicons?domain=swisscows.com&sz=64',
+                description: "Anonymous search engine from Switzerland."
             }
+        };
+
+        // Lucide Icons Helper Component
+        const Icon = ({ name, className = "w-5 h-5" }) => {
+            const containerRef = useRef(null);
+            
+            useEffect(() => {
+                if (containerRef.current) {
+                    containerRef.current.innerHTML = `<i data-lucide="${name}"></i>`;
+                    lucide.createIcons({
+                        attrs: { class: className },
+                        nameAttr: 'data-lucide',
+                        icons: { [name]: lucide[name] },
+                        root: containerRef.current
+                    });
+                }
+            }, [name, className]);
+
+            return h('span', { 
+                ref: containerRef, 
+                className: "inline-flex items-center justify-center", 
+                "aria-hidden": "true" 
+            });
         };
 
         function App() {
             // --- State Persistence ---
             const [query, setQuery] = useState('');
             const [engine, setEngine] = useState(() => {
-                return localStorage.getItem('gm-engine') || 'ecosia';
+                const savedEngine = localStorage.getItem('gm-engine');
+                return (savedEngine && SEARCH_ENGINES[savedEngine]) ? savedEngine : 'ecosia';
             });
             const [darkMode, setDarkMode] = useState(() => {
                 return localStorage.getItem('gm-dark-mode') === 'true' || 
                        (!('gm-dark-mode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
             });
-            const [reducedMotion, setReducedMotion] = useState(() => localStorage.getItem('gm-reduced-motion') === 'true');
             const [dyslexiaMode, setDyslexiaMode] = useState(() => localStorage.getItem('gm-dyslexia-mode') === 'true');
+            const [cookiesAccepted, setCookiesAccepted] = useState(() => localStorage.getItem('gm-cookies-accepted') === 'true');
+            const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
             
             // --- UI State ---
             const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -155,8 +244,8 @@
             useEffect(() => {
                 localStorage.setItem('gm-engine', engine);
                 localStorage.setItem('gm-dark-mode', darkMode);
-                localStorage.setItem('gm-reduced-motion', reducedMotion);
                 localStorage.setItem('gm-dyslexia-mode', dyslexiaMode);
+                localStorage.setItem('gm-cookies-accepted', cookiesAccepted);
 
                 if (darkMode) {
                     document.documentElement.classList.add('dark');
@@ -169,13 +258,7 @@
                 } else {
                     document.body.classList.remove('dyslexia-mode');
                 }
-
-                if (reducedMotion) {
-                    document.body.classList.add('reduced-motion');
-                } else {
-                    document.body.classList.remove('reduced-motion');
-                }
-            }, [darkMode, dyslexiaMode, reducedMotion, engine]);
+            }, [darkMode, dyslexiaMode, engine, cookiesAccepted]);
 
             useEffect(() => {
                 const handleClickOutside = (event) => {
@@ -191,223 +274,237 @@
                 e?.preventDefault();
                 if (!query.trim()) return;
 
-                const selectedEngine = SEARCH_ENGINES[engine];
-                const searchUrl = `${selectedEngine.url}?${selectedEngine.queryParam}=${encodeURIComponent(query)}`;
+                const searchUrl = `${currentEngine.url}?${currentEngine.queryParam}=${encodeURIComponent(query)}`;
                 window.open(searchUrl, '_blank');
             };
 
-            // Lucide Icons Helper Component
-            // Wrapped in a stable span to prevent React from crashing when Lucide replaces the node
-            const Icon = ({ name, className = "w-5 h-5" }) => {
-                const containerRef = useRef(null);
+            const currentEngine = SEARCH_ENGINES[engine] || SEARCH_ENGINES.ecosia;
+
+            return h('div', { className: "flex flex-col min-h-screen" }, [
+                h('header', { 
+                    key: 'header',
+                    className: "fixed top-0 left-0 right-0 z-40 p-6 flex justify-between items-center bg-transparent" 
+                }, [
+                    h('div', { key: 'logo', className: "flex items-center gap-2 group cursor-default" }, [
+                        h('div', { 
+                            className: "w-10 h-10 overflow-hidden rounded-xl shadow-lg shadow-emerald-600/20 group-hover:rotate-12 transition-transform bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center",
+                            "aria-hidden": "true"
+                        }, 
+                            h('img', { src: "/favicon.png", alt: "", className: "w-full h-full object-cover" })
+                        ),
+                        h('h1', { className: "text-xl font-bold tracking-tight hidden sm:block" }, "GreenMeans")
+                    ]),
+                    h('div', { key: 'nav', className: "flex items-center gap-2" }, 
+                        h('button', { 
+                            onClick: () => setIsSettingsOpen(true),
+                            className: "w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm hover:scale-110 active:scale-95 transition-all text-slate-600 dark:text-slate-300",
+                            "aria-label": "Settings"
+                        }, h(Icon, { name: "Settings" }))
+                    )
+                ]),
+                h('main', { 
+                    key: 'main',
+                    className: "flex-1 flex flex-col items-center justify-center p-6 relative" 
+                }, [
+                    h('div', { key: 'blob1', className: "absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" }),
+                    h('div', { key: 'blob2', className: "absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" }),
+                    
+                    h('div', { key: 'content', className: "w-full max-w-2xl flex flex-col items-center gap-12 z-10" }, [
+                        h('div', { className: "text-center animate-in fade-in slide-in-from-bottom-4 duration-700" }, [
+                            h('h2', { className: "text-4xl md:text-6xl font-bold tracking-tight mb-4 text-slate-800 dark:text-white" }, [
+                                "The search for a ",
+                                h('span', { key: 'highlight', className: "text-emerald-600" }, "Greener"),
+                                " web."
+                            ]),
+                            h('p', { className: "text-slate-500 dark:text-slate-400 text-lg md:text-xl max-w-lg mx-auto" }, 
+                                "Pick your search provider and help restore the web’s natural balance."
+                            )
+                        ]),
+                        
+                        h('div', { className: "w-full relative group" }, [
+                            h('form', { 
+                                onSubmit: handleSearch,
+                                role: "search",
+                                className: "relative flex items-center bg-white dark:bg-slate-900 rounded-[2rem] p-2 shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-100 dark:border-slate-800 transition-all group-hover:border-emerald-500/30 group-focus-within:border-emerald-500/50"
+                            }, [
+                                h('div', { key: 'dropdown', className: "relative", ref: dropdownRef }, [
+                                    h('button', { 
+                                        type: "button",
+                                        onClick: () => setIsDropdownOpen(!isDropdownOpen),
+                                        "aria-haspopup": "listbox",
+                                        "aria-expanded": isDropdownOpen,
+                                        "aria-label": `Change search engine (current: ${currentEngine.name})`,
+                                        className: "flex items-center gap-3 pl-4 pr-3 py-3 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300 font-medium whitespace-nowrap"
+                                    }, [
+                                        h('div', { className: "w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700", "aria-hidden": "true" }, 
+                                            h('img', { src: currentEngine.icon, alt: "", className: "w-4 h-4 object-contain" })
+                                        ),
+                                        h('span', { className: "hidden sm:inline" }, currentEngine.name),
+                                        h(Icon, { name: "ChevronDown", className: `w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}` })
+                                    ]),
+                                    isDropdownOpen && h('div', { 
+                                        role: "listbox",
+                                        className: "absolute left-0 top-full mt-4 w-64 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl overflow-y-auto max-h-80 z-50 p-2 animate-in fade-in slide-in-from-top-2" 
+                                    }, 
+                                        Object.entries(SEARCH_ENGINES).map(([key, info]) => 
+                                            h('button', { 
+                                                key,
+                                                role: "option",
+                                                "aria-selected": engine === key,
+                                                onClick: () => {
+                                                    setEngine(key);
+                                                    setIsDropdownOpen(false);
+                                                },
+                                                className: `w-full flex items-start gap-4 p-3 rounded-xl transition-all text-left ${engine === key ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'}`
+                                            }, [
+                                                h('div', { key: 'icon', className: `w-10 h-10 shrink-0 flex items-center justify-center rounded-lg shadow-sm ${engine === key ? 'bg-white' : 'bg-slate-100 dark:bg-slate-800'}`, "aria-hidden": "true" }, 
+                                                    h('img', { src: info.icon, alt: "", className: "w-6 h-6 object-contain" })
+                                                ),
+                                                h('div', { key: 'text' }, [
+                                                    h('div', { className: "font-bold" }, info.name),
+                                                    h('div', { className: "text-xs opacity-70 truncate w-36" }, info.description)
+                                                ])
+                                            ])
+                                        )
+                                    )
+                                ]),
+                                h('input', { 
+                                    key: 'input',
+                                    type: "text", 
+                                    value: query,
+                                    onChange: (e) => setQuery(e.target.value),
+                                    placeholder: `Search with ${currentEngine.name}...`,
+                                    "aria-label": `Search input for ${currentEngine.name}`,
+                                    className: "flex-1 bg-transparent border-none outline-none px-4 md:px-6 py-4 text-lg text-slate-800 dark:text-white placeholder:text-slate-400"
+                                }),
+                                h('button', { 
+                                    key: 'submit',
+                                    type: "submit",
+                                    className: "bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-full transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center justify-center focus:ring-2 focus:ring-emerald-500 outline-none",
+                                    "aria-label": "Submit Search"
+                                }, h(Icon, { name: "Search" }))
+                            ]),
+                            
+                            h('div', { key: 'status', className: "mt-8 flex flex-wrap justify-center gap-6 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]" }, [
+                                h('div', { className: "flex items-center gap-3 px-4 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-full border border-slate-200/50 dark:border-slate-700/50" }, [
+                                    h('img', { src: currentEngine.icon, alt: "", className: "w-3 h-3 object-contain" }),
+                                    h('span', null, `Active Provider: ${currentEngine.name}`)
+                                ]),
+                                h('div', { className: "flex items-center gap-2.5 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/10 rounded-full border border-emerald-100 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-500" }, [
+                                    h('div', { className: "w-2 h-2 rounded-full bg-emerald-500 animate-pulse" }),
+                                    h('span', null, "Eco-Friendly Platform")
+                                ])
+                            ])
+                        ])
+                    ]),
+                    
+                    h('footer', { key: 'footer', className: "absolute bottom-8 text-center text-slate-400 text-sm" }, 
+                        h('p', null, `© 2026 GreenMeans: Search. All results provided by ${currentEngine.name}`)
+                    )
+                ]),
                 
-                useEffect(() => {
-                    if (containerRef.current) {
-                        // Standard UMD Lucide manipulation inside a safe container
-                        // Clear previous content to avoid duplicate icons on re-render
-                        containerRef.current.innerHTML = `<i data-lucide="${name}"></i>`;
-                        lucide.createIcons({
-                            attrs: { class: className },
-                            nameAttr: 'data-lucide',
-                            icons: { [name]: lucide[name] },
-                            root: containerRef.current
-                        });
-                    }
-                }, [name, className]);
+                isSettingsOpen && h('div', { key: 'modal', className: "fixed inset-0 z-50 flex items-center justify-center px-4" }, [
+                    h('div', { className: "absolute inset-0 bg-slate-900/60 backdrop-blur-sm", onClick: () => setIsSettingsOpen(false) }),
+                    h('div', { className: "bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden z-20 border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200" }, [
+                        h('div', { className: "p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50" }, [
+                            h('h3', { className: "text-2xl font-bold flex items-center gap-3" }, [
+                                h(Icon, { name: "Settings", className: "w-6 h-6 text-emerald-600" }),
+                                "Settings"
+                            ]),
+                            h('button', { 
+                                onClick: () => setIsSettingsOpen(false),
+                                className: "p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors",
+                                "aria-label": "Close settings"
+                            }, h(Icon, { name: "X" }))
+                        ]),
+                        h('div', { className: "p-8 space-y-6" }, [
+                            h('section', null, [
+                                h('h4', { className: "text-xs font-bold text-slate-400 uppercase tracking-widest mb-4" }, "Accessibility & Style"),
+                                h('div', { className: "space-y-4" }, [
+                                    [
+                                        { name: "Dark Mode Appearance", icon: darkMode ? "Moon" : "Sun", active: darkMode, toggle: () => setDarkMode(!darkMode) },
+                                        { name: "Dyslexia Friendly Font", icon: "Type", active: dyslexiaMode, toggle: () => setDyslexiaMode(!dyslexiaMode), subtitle: "Lexend for better readability" }
+                                    ].map((opt, i) => 
+                                        h('div', { key: i, className: "flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl" }, [
+                                            h('div', { className: "flex items-center gap-3" }, [
+                                                h(Icon, { name: opt.icon }),
+                                                h('div', { className: "flex flex-col" }, [
+                                                    h('span', { className: "font-medium" + (opt.subtitle ? " leading-none" : "") }, opt.name),
+                                                    opt.subtitle && h('span', { className: "text-[10px] text-slate-400" }, opt.subtitle)
+                                                ])
+                                            ]),
+                                            h('button', { 
+                                                onClick: opt.toggle,
+                                                role: "switch",
+                                                "aria-checked": opt.active,
+                                                "aria-label": `Toggle ${opt.name}`,
+                                                className: `w-12 h-6 rounded-full transition-colors relative ${opt.active ? 'bg-emerald-600' : 'bg-slate-300'}`
+                                            }, h('div', { className: `absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${opt.active ? 'left-7' : 'left-1'}` }))
+                                        ])
+                                    )
+                                ])
+                            ])
+                        ]),
+                        h('div', { className: "p-8 bg-slate-50 dark:bg-slate-800/30 text-center" }, 
+                            h('p', { className: "text-xs text-slate-400" }, "Your preferences are saved locally on this device.")
+                        )
+                    ])
+                ]),
 
-                return <span ref={containerRef} className="inline-flex items-center justify-center" aria-hidden="true"></span>;
-            };
+                isDeclineModalOpen && h('div', { key: 'decline-modal', className: "fixed inset-0 z-[60] flex items-center justify-center px-4 animate-in fade-in duration-300" }, [
+                    h('div', { className: "absolute inset-0 bg-slate-900/40 backdrop-blur-sm" }),
+                    h('div', { className: "bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden z-[70] border border-slate-100 dark:border-slate-800 p-8 text-center animate-in zoom-in-95 duration-200" }, [
+                        h('div', { className: "w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center text-amber-600 mx-auto mb-6" }, 
+                            h(Icon, { name: "AlertTriangle", className: "w-8 h-8" })
+                        ),
+                        h('h3', { className: "text-xl font-bold mb-3 text-slate-800 dark:text-white" }, "Cookie Consent Declined"),
+                        h('p', { className: "text-slate-500 dark:text-slate-400 text-sm mb-8 leading-relaxed" }, 
+                            "By declining non-essential cookies, some features of this website might not function as expected."
+                        ),
+                        h('button', { 
+                            onClick: () => {
+                                setIsDeclineModalOpen(false);
+                                setCookiesAccepted(true); // Treat "Understood" as completing the interaction to hide the banner
+                            },
+                            className: "w-full py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white rounded-xl font-semibold transition-all active:scale-95 shadow-lg shadow-slate-900/10"
+                        }, "Understood")
+                    ])
+                ]),
 
-            return (
-                <div className="flex flex-col min-h-screen">
-                    <header className="fixed top-0 left-0 right-0 z-40 p-6 flex justify-between items-center bg-transparent">
-                        <div className="flex items-center gap-2 group cursor-default">
-                            <div className="w-10 h-10 overflow-hidden rounded-xl shadow-lg shadow-emerald-600/20 group-hover:rotate-12 transition-transform bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center">
-                                <img src="/favicon.png" alt="GreenMeans Logo" className="w-full h-full object-cover" />
-                            </div>
-                            <h1 className="text-xl font-bold tracking-tight hidden sm:block">GreenMeans</h1>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <button 
-                                onClick={() => setIsSettingsOpen(true)}
-                                className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm hover:scale-110 active:scale-95 transition-all text-slate-600 dark:text-slate-300"
-                                aria-label="Settings"
-                            >
-                                <Icon name="Settings" />
-                            </button>
-                        </div>
-                    </header>
-
-                    <main className="flex-1 flex flex-col items-center justify-center p-6 relative">
-                        {/* Decorative background blobs */}
-                        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-                        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
-
-                        <div className="w-full max-w-2xl flex flex-col items-center gap-12 z-10">
-                            <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 text-slate-800 dark:text-white">
-                                    The search for a <span className="text-emerald-600">greener</span> web.
-                                </h2>
-                                <p className="text-slate-500 dark:text-slate-400 text-lg md:text-xl max-w-lg mx-auto">
-                                    Choose your search provider and help restore the digital ecosystem.
-                                </p>
-                            </div>
-
-                            <div className="w-full relative group">
-                                <form 
-                                    onSubmit={handleSearch}
-                                    className="relative flex items-center bg-white dark:bg-slate-900 rounded-[2rem] p-2 shadow-2xl shadow-slate-200 dark:shadow-none border border-slate-100 dark:border-slate-800 transition-all group-hover:border-emerald-500/30 group-focus-within:border-emerald-500/50"
-                                >
-                                    <div className="relative" ref={dropdownRef}>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                            className="flex items-center gap-3 pl-4 pr-3 py-3 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300 font-medium whitespace-nowrap"
-                                        >
-                                            <div className="w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700">
-                                                <img src={SEARCH_ENGINES[engine].icon} alt="" className="w-4 h-4 object-contain" />
-                                            </div>
-                                            <span className="hidden sm:inline">{SEARCH_ENGINES[engine].name}</span>
-                                            <Icon name="ChevronDown" className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                                        </button>
-
-                                        {isDropdownOpen && (
-                                            <div className="absolute left-0 top-full mt-4 w-64 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl overflow-y-auto max-h-[60vh] z-50 p-2 animate-in fade-in slide-in-from-top-2">
-                                                {Object.entries(SEARCH_ENGINES).map(([key, info]) => (
-                                                    <button
-                                                        key={key}
-                                                        onClick={() => {
-                                                            setEngine(key);
-                                                            setIsDropdownOpen(false);
-                                                        }}
-                                                        className={`w-full flex items-start gap-4 p-3 rounded-xl transition-all text-left ${engine === key ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'}`}
-                                                    >
-                                                        <div className={`w-10 h-10 shrink-0 flex items-center justify-center rounded-lg shadow-sm ${engine === key ? 'bg-white' : 'bg-slate-100 dark:bg-slate-800'}`}>
-                                                            <img src={info.icon} alt="" className="w-6 h-6 object-contain" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-bold">{info.name}</div>
-                                                            <div className="text-xs opacity-70 truncate w-36">{info.description}</div>
-                                                        </div>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <input 
-                                        type="text" 
-                                        value={query}
-                                        onChange={(e) => setQuery(e.target.value)}
-                                        placeholder={`Search with ${SEARCH_ENGINES[engine].name}...`}
-                                        className="flex-1 bg-transparent border-none outline-none px-4 md:px-6 py-4 text-lg text-slate-800 dark:text-white placeholder:text-slate-400"
-                                    />
-
-                                    <button 
-                                        type="submit"
-                                        className="bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-full transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center justify-center focus:ring-2 focus:ring-emerald-500 outline-none"
-                                        aria-label="Submit Search"
-                                    >
-                                        <Icon name="Search" />
-                                    </button>
-                                </form>
-
-                                <div className="mt-8 flex flex-wrap justify-center gap-6 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
-                                    <div className="flex items-center gap-3 px-4 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-full border border-slate-200/50 dark:border-slate-700/50">
-                                        <img src={SEARCH_ENGINES[engine].icon} alt="" className="w-3 h-3 object-contain" />
-                                        <span>Active Provider: {SEARCH_ENGINES[engine].name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2.5 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/10 rounded-full border border-emerald-100 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-500">
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                        <span>Eco-Friendly Platform</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <footer className="absolute bottom-8 text-center text-slate-400 text-sm">
-                            <p>© 2026 GreenMeans: Search. All results provided by {SEARCH_ENGINES[engine].name}</p>
-                        </footer>
-                    </main>
-
-                    {/* Settings Modal */}
-                    {isSettingsOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-                            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsSettingsOpen(false)} />
-                            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden z-20 border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
-                                <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
-                                    <h3 className="text-2xl font-bold flex items-center gap-3">
-                                        <Icon name="Settings" className="w-6 h-6 text-emerald-600" />
-                                        Settings
-                                    </h3>
-                                    <button 
-                                        onClick={() => setIsSettingsOpen(false)}
-                                        className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"
-                                    >
-                                        <Icon name="X" />
-                                    </button>
-                                </div>
-                                <div className="p-8 space-y-6">
-                                    <section>
-                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Accessibility & Style</h4>
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                                                <div className="flex items-center gap-3">
-                                                    <Icon name={darkMode ? "Moon" : "Sun"} />
-                                                    <span className="font-medium">Dark Mode Appearance</span>
-                                                </div>
-                                                <button 
-                                                    onClick={() => setDarkMode(!darkMode)}
-                                                    className={`w-12 h-6 rounded-full transition-colors relative ${darkMode ? 'bg-emerald-600' : 'bg-slate-300'}`}
-                                                >
-                                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${darkMode ? 'left-7' : 'left-1'}`} />
-                                                </button>
-                                            </div>
-
-                                            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                                                <div className="flex items-center gap-3">
-                                                    <Icon name="Type" />
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium leading-none">Dyslexia Friendly Font</span>
-                                                        <span className="text-[10px] text-slate-400">Open Sans for better readability</span>
-                                                    </div>
-                                                </div>
-                                                <button 
-                                                    onClick={() => setDyslexiaMode(!dyslexiaMode)}
-                                                    className={`w-12 h-6 rounded-full transition-colors relative ${dyslexiaMode ? 'bg-emerald-600' : 'bg-slate-300'}`}
-                                                >
-                                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${dyslexiaMode ? 'left-7' : 'left-1'}`} />
-                                                </button>
-                                            </div>
-
-                                            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                                                <div className="flex items-center gap-3">
-                                                    <Icon name="ZapOff" />
-                                                    <span className="font-medium">Reduce Motion</span>
-                                                </div>
-                                                <button 
-                                                    onClick={() => setReducedMotion(!reducedMotion)}
-                                                    className={`w-12 h-6 rounded-full transition-colors relative ${reducedMotion ? 'bg-emerald-600' : 'bg-slate-300'}`}
-                                                >
-                                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${reducedMotion ? 'left-7' : 'left-1'}`} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </section>
-                                </div>
-                                <div className="p-8 bg-slate-50 dark:bg-slate-800/30 text-center">
-                                    <p className="text-xs text-slate-400">Your preferences are saved locally on this device.</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
+                !cookiesAccepted && h('div', { key: 'cookie-banner', className: "fixed bottom-4 left-4 right-4 z-50 flex justify-center animate-in slide-in-from-bottom-8 duration-500" }, [
+                    h('div', { className: "w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4" }, [
+                        h('div', { className: "flex items-center gap-4" }, [
+                            h('div', { className: "w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center text-emerald-600 shrink-0" }, 
+                                h(Icon, { name: "Cookie" })
+                            ),
+                            h('p', { className: "text-sm text-slate-600 dark:text-slate-400 leading-relaxed" }, [
+                                "We use cookies to ensure you get the best experience on our website. Read our ",
+                                h('a', { 
+                                    href: "https://privacy.greenmeans.ovh/", 
+                                    target: "_blank", 
+                                    rel: "noopener noreferrer",
+                                    className: "text-emerald-600 font-semibold hover:underline" 
+                                }, "Privacy Policy"),
+                                "."
+                            ])
+                        ]),
+                        h('div', { className: "flex items-center gap-3 w-full md:w-auto" }, [
+                            h('button', { 
+                                onClick: () => setIsDeclineModalOpen(true),
+                                className: "flex-1 md:flex-none px-6 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap"
+                            }, "Decline"),
+                            h('button', { 
+                                onClick: () => setCookiesAccepted(true),
+                                className: "flex-1 md:flex-none px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold transition-all active:scale-95 whitespace-nowrap shadow-lg shadow-emerald-600/20"
+                            }, "Accept")
+                        ])
+                    ])
+                ])
+            ]);
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render(h(App));
     </script>
 </body>
 </html>

@@ -84,10 +84,11 @@
     <!-- Custom Styles -->
     <style>
         body {
-            transition: background-color 0.5s ease, color 0.5s ease;
             min-height: 100vh;
             margin: 0;
             font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .dyslexia-mode {
@@ -125,7 +126,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white">
+<body class="selection:bg-emerald-500 selection:text-white transition-colors duration-300">
     <div id="root"></div>
 
     <!-- React, ReactDOM, Babel, and Lucide CDNs -->
@@ -243,17 +244,42 @@
             // --- Handlers ---
             useEffect(() => {
                 localStorage.setItem('gm-engine', engine);
-                localStorage.setItem('gm-dark-mode', darkMode);
-                localStorage.setItem('gm-dyslexia-mode', dyslexiaMode);
-                localStorage.setItem('gm-cookies-accepted', cookiesAccepted);
+            }, [engine]);
 
-                if (darkMode) {
-                    document.documentElement.classList.add('dark');
+            useEffect(() => {
+                localStorage.setItem('gm-cookies-accepted', cookiesAccepted);
+            }, [cookiesAccepted]);
+
+            useEffect(() => {
+                localStorage.setItem('gm-dyslexia-mode', dyslexiaMode);
+                if (dyslexiaMode) {
+                    document.body.classList.add('dyslexia-mode');
                 } else {
-                    document.documentElement.classList.remove('dark');
+                    document.body.classList.remove('dyslexia-mode');
+                }
+            }, [dyslexiaMode]);
+
+            useEffect(() => {
+                localStorage.setItem('gm-dark-mode', darkMode);
+                
+                const html = document.documentElement;
+                const body = document.body;
+                
+                if (darkMode) {
+                    html.classList.add('dark');
+                    body.classList.add('dark');
+                    body.style.backgroundColor = '#020617'; // bg-slate-950
+                    body.style.color = '#f8fafc'; // text-slate-50
+                    html.style.colorScheme = 'dark';
+                } else {
+                    html.classList.remove('dark');
+                    body.classList.remove('dark');
+                    body.style.backgroundColor = '#f8fafc'; // bg-slate-50
+                    body.style.color = '#020617'; // text-slate-950
+                    html.style.colorScheme = 'light';
                 }
 
-                // Sync Meta Theme Color for mobile status bars
+                // Sync Meta Theme Color
                 const themeColor = darkMode ? '#020617' : '#f8fafc';
                 let metaTheme = document.querySelector('meta[name="theme-color"]');
                 if (!metaTheme) {
@@ -262,13 +288,7 @@
                     document.head.appendChild(metaTheme);
                 }
                 metaTheme.setAttribute('content', themeColor);
-
-                if (dyslexiaMode) {
-                    document.body.classList.add('dyslexia-mode');
-                } else {
-                    document.body.classList.remove('dyslexia-mode');
-                }
-            }, [darkMode, dyslexiaMode, engine, cookiesAccepted]);
+            }, [darkMode]);
 
             useEffect(() => {
                 const handleClickOutside = (event) => {

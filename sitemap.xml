@@ -6,13 +6,13 @@
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
 <url>
-  <loc>https://greenmeans.ovh/</loc>
+  <loc>https://search.greenmeans.ovh/</loc>
   <lastmod>2026-05-11T13:03:20+00:00</lastmod>
   <changefreq>always</changefreq>
 </url>
-
+      
 <url>
-  <loc>https://search.greenmeans.ovh/</loc>
+  <loc>https://greenmeans.ovh/</loc>
   <lastmod>2026-05-11T13:03:20+00:00</lastmod>
   <changefreq>always</changefreq>
 </url>      

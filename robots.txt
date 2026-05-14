@@ -1,7 +1,7 @@
 # GreenMeans - 2026
 User-agent: *
 Allow: /
-Content-Usage: search=yes, train-ai=no
+Content-Usage: search=y, train-ai=n
 Content-Signal: search=yes, ai-input=no, ai-train=no
 
 User-agent: GPTBot

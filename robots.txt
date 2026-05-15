@@ -1,4 +1,9 @@
 # GreenMeans - 2026
+
+User-agent: *
+Allow: /
+Sitemap: https://search.greenmeans.ovh/sitemap.xml
+
 User-agent: *
 Allow: /
 Content-Usage: search=y, train-ai=n
